@@ -1,11 +1,10 @@
 import React from 'react'
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 
 const PublicLayout = () => {
-    const navigate = useNavigate();
 
     if (localStorage.getItem("token")) {
-        return navigate("/home");
+        return <Navigate to="/dashboard" replace />;
     }
 
     return <Outlet />;
