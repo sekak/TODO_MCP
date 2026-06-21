@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import TodoBoard from "./pages/TodoBoard";
-import { getTodos } from "./lib/api";
 import TopBar from "./components/TopBar";
 import Navbar from "./components/Navbar";
 
@@ -10,8 +9,8 @@ const App = () => {
   useEffect(() => {
     const fetchTodos = async () => {
       try {
-        const response = await getTodos();
-        setTodos(response.data);
+        // const response = await getTodos();
+        // setTodos(response.data);
       } catch (error) {
         console.error("Error fetching todos:", error);
       }
@@ -21,13 +20,11 @@ const App = () => {
   }, []);
 
   return (
-    <div>
-      <div className="flex min-h-screen ">
-        <Navbar />
-        <div className="flex flex-col flex-1">
-          <TopBar  />
-          <TodoBoard className="bg-green-500" todos={todos} setTodos={setTodos} />
-        </div>
+    <div className="flex min-h-screen w-full">
+      <Navbar />
+      <div className="flex flex-col flex-1">
+        <TopBar />
+        <TodoBoard className="bg-green-500" todos={todos} setTodos={setTodos} />
       </div>
     </div>
   );
