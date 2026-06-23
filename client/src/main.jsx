@@ -7,6 +7,7 @@ import ProtectRoute from './components/ProtectRoute.js'
 import PublicLayout from './components/PublicLayout.js'
 import SignIn from './pages/SignIn.js'
 import SignUp from './pages/SignUp.js'
+import EmailVerification from './pages/EmailVerification.js'
 
 const router = createBrowserRouter([
   {
@@ -14,11 +15,13 @@ const router = createBrowserRouter([
     element: <ProtectRoute/>,
     children: [
       { path: "/", element: <App /> },
+      // verfie avec token
     ],
   },
   {
     element: <PublicLayout/>,
     children: [
+      { path: "/verify", element: <EmailVerification /> },
       { path: "/signin", element: <SignIn /> },
       { path: "/signup", element: <SignUp /> }
     ]

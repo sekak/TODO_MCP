@@ -15,7 +15,6 @@
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "js-crypto-random": "^1.0.5",
     "jsonwebtoken": "^9.0.3",
     "resend": "^6.14.0",
     "zod": "^4.4.3"

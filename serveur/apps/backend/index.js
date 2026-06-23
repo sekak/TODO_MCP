@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json());
 
 
-app.use("/api/v1", AuthRouter);
+app.use("/api/v1/auth", AuthRouter);
 
 
 app.get("/health", (req, res) => {
