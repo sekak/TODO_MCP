@@ -12,6 +12,7 @@ import {
   clearRefreshCookie,
   REFRESH_COOKIE,
   hashPassword,
+  expireAt,
 } from "../utils/fn.js";
 
 export const Login = async (req, res, next) => {
@@ -81,18 +82,15 @@ export const Register = async (req, res, next) => {
 
     // 4. Générer le token de vérification
     const token = crypto.randomBytes(32).toString("hex");
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
     // 5. Sauvegarder le token
     const { error: tokenError } = await supabase
       .from("email_verifications")
-      .insert([{ user_id: newUser.id, token, expires_at: expiresAt }]);
+      .insert([{ user_id: newUser.id, token, expires_at: expireAt() }]);
 
     if (tokenError)
       return res.status(500).json({
-        message:
-          tokenError.message ||
-          "Erreur lors de la création du token de vérification",
+        message: "Erreur lors de la création du token de vérification",
       });
 
     // 6. Envoyer l'email
@@ -124,7 +122,7 @@ export const VerifyEmail = async (req, res, next) => {
       return res.status(400).json({ message: "Token invalide" });
 
     // 3. Token expiré → supprimer PUIS throw
-    if (new Date(tokenData.expires_at) < new Date()) {
+    if (new Date(tokenData.expires_at + "Z") < new Date()) {
       await supabase.from("email_verifications").delete().eq("token", token);
 
       return res
@@ -194,4 +192,59 @@ export const Refresh = async (req, res, next) => {
 export const Logout = async (req, res, next) => {
   clearRefreshCookie(res);
   res.status(200).json({ message: "Déconnecté" });
+};
+
+export const RequestNewVerficationEmail = async (req, res, next) => {
+  // Message générique réutilisé pour éviter l'énumération des comptes
+  const genericMessage =
+    "Si un compte existe pour cet email, un nouveau lien de vérification a été envoyé.";
+
+  try {
+    const { email } = req.body;
+
+    // 1. Chercher l'utilisateur
+    const {
+      data: [user],
+      error,
+    } = await supabase
+      .from("users")
+      .select("id, email, is_verified")
+      .eq("email", email);
+
+    if (error) {
+      return res.status(500).json({ message: "Erreur serveur" });
+    }
+
+    // 2. Anti-énumération : ne pas révéler si le compte existe
+    if (!user) {
+      return res.status(200).json({ message: genericMessage });
+    }
+
+    // 3. Compte déjà vérifié
+    if (user.is_verified) {
+      return res.status(200).json({ message: "Ce compte est déjà vérifié." });
+    }
+
+    // 4. Supprimer les anciens tokens — garantit un seul token actif
+    await supabase.from("email_verifications").delete().eq("user_id", user.id);
+
+    // 5. Générer un nouveau token (même logique que Register)
+    const token = crypto.randomBytes(32).toString("hex");
+    const { error: tokenError } = await supabase
+      .from("email_verifications")
+      .insert([{ user_id: user.id, token, expires_at: expireAt() }]);
+
+    if (tokenError) {
+      return res.status(500).json({
+        message: "Erreur lors de la création du token de vérification",
+      });
+    }
+
+    // 6. Envoyer l'email
+    await sendVerificationEmail(user.email, token);
+
+    return res.status(200).json({ message: genericMessage });
+  } catch (err) {
+    return res.status(500).json({ message: "Erreur serveur" });
+  }
 };

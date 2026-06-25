@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, Send } from 'lucide-react';
 import useSignIn from '../hooks/useSignIn';
-import toast from 'react-hot-toast';
+import useResendVerification from '../hooks/useResendVerification';
 import { Link } from 'react-router-dom';
 
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
+  const [lastEmail, setLastEmail] = useState('');
   const { login, loading, error } = useSignIn();
+  const { resend, loading: resending } = useResendVerification();
+
+  // Le login renvoie un message texte "Email non vérifié..." (403)
+  const needsVerification =
+    typeof error === 'string' && error.toLowerCase().includes('vérifié');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -14,6 +20,7 @@ export default function SignIn() {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
+    setLastEmail(email);
     await login(email, password);
   }
 
@@ -105,6 +112,33 @@ export default function SignIn() {
             )}
           </button>
         </form>
+
+        {/* Renvoi de l'email de vérification (compte non vérifié) */}
+        {needsVerification && (
+          <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl space-y-3">
+            <p className="text-sm text-amber-300/90 text-center">
+              Ton email n'est pas encore vérifié. Besoin d'un nouveau lien ?
+            </p>
+            <button
+              type="button"
+              onClick={() => resend(lastEmail)}
+              disabled={resending}
+              className="w-full py-3 px-6 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 font-medium rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {resending ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Envoi...
+                </>
+              ) : (
+                <>
+                  <Send size={16} />
+                  Renvoyer l'email de vérification
+                </>
+              )}
+            </button>
+          </div>
+        )}
 
         {/* Footer de la carte */}
         <p className="text-center text-sm text-slate-400 mt-8">

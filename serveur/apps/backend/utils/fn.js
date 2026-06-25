@@ -45,3 +45,5 @@ export const setRefreshCookie = (res, token) => {
 export const clearRefreshCookie = (res) => {
   res.clearCookie(REFRESH_COOKIE, { path: "/api/v1/auth" });
 };
+
+export const expireAt = () => new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
