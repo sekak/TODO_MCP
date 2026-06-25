@@ -29,7 +29,7 @@ export const sendVerificationEmail = async (userEmail, token) => {
             Vérifier mon e-mail
           </a>
         </div>
-        <p style="font-size: 12px; color: #64748b;">Ce lien expirera dans 24 heures.</p>
+        <p style="font-size: 12px; color: #64748b;">Ce lien expirera dans 5 minutes.</p>
       </div>
     `,
   };

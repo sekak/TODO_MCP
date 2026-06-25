@@ -1,11 +1,14 @@
-import { useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, XCircle, Loader2, ArrowRight } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2, ArrowRight, Mail, Send } from 'lucide-react';
 import useVerifyEmail from '../hooks/useVerifyEmail';
+import useResendVerification from '../hooks/useResendVerification';
 
 export default function VerifyEmail() {
   const navigate = useNavigate();
   const { loading, error, success } = useVerifyEmail();
+  const { resend, loading: resending } = useResendVerification();
+  const [resendEmail, setResendEmail] = useState('');
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 selection:bg-indigo-500 selection:text-white">
@@ -54,6 +57,43 @@ export default function VerifyEmail() {
               <h1 className="text-2xl font-extrabold text-white mb-2">Échec de la vérification</h1>
               <p className="text-sm text-rose-400/80">{error}</p>
             </div>
+
+            {/* Renvoi de l'email de vérification */}
+            <div className="space-y-3 text-left">
+              <p className="text-sm text-slate-400 text-center">
+                Lien expiré ou invalide ? Renvoie-toi un nouveau lien.
+              </p>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">
+                  <Mail size={18} />
+                </span>
+                <input
+                  type="email"
+                  value={resendEmail}
+                  onChange={(e) => setResendEmail(e.target.value)}
+                  placeholder="nom@exemple.com"
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-800/40 border border-slate-700/60 rounded-2xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all text-sm"
+                />
+              </div>
+              <button
+                onClick={() => resend(resendEmail)}
+                disabled={resending}
+                className="w-full py-3.5 px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {resending ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    Envoi...
+                  </>
+                ) : (
+                  <>
+                    <Send size={18} />
+                    Renvoyer l'email de vérification
+                  </>
+                )}
+              </button>
+            </div>
+
             <button
               onClick={() => navigate('/signin')}
               className="w-full py-3.5 px-6 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-2xl transition-colors"

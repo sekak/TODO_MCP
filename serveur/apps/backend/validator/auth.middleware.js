@@ -44,3 +44,10 @@ export const loginSchema = z.object({
     .transform((val) => sanitizeString(val.trim())),
 });
 
+export const resendEmailSchema = z.object({
+  email: z
+    .string({ required_error: "L'email est requis" })
+    .email("Format d'email invalide")
+    .toLowerCase()
+    .transform((val) => sanitizeString(val.trim())),
+});
